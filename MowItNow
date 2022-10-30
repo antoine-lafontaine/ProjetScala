@@ -1,0 +1,130 @@
+protected class Jardin(long : Int , larg : Int) {
+    var longueur : Int = long
+    var largeur : Int = larg
+    def setLongueur(long : Int) : Unit = {
+        longueur = long
+    } 
+    def setLargeur(larg : Int) : Unit ={
+        largeur = larg
+    } 
+    def getLongueur(): Int ={
+        return(longueur)
+    }
+    def getLargeur(): Int = {
+        return(largeur)
+    }
+    def setJardin(long : Int, larg : Int) : Unit = {
+        setLongueur(long)
+        setLargeur(larg)
+    }
+    
+}
+
+protected class Tondeuse( abs : Int , ord : Int , ori : Char , jard : Jardin){
+  var abscisse : Int = abs
+  var ordonnee : Int = ord
+  var orientation : Char = ori
+  val jardin : Jardin = jard
+  def setAbscisse (abs : Int) : Unit = {
+    abscisse = abs
+  }
+  def setOrdonnee (ord : Int) : Unit = {
+    ordonnee = ord
+  }
+  def setOrientation (ori : Char) : Unit = {
+    orientation = ori
+  }
+  def setTondeuse(abs : Int, ord : Int, ori : Char) = {
+    setAbscisse(abs)
+    setOrdonnee(ord)
+    setOrientation(ori)
+  }
+  def getAbscisse() : Int = {
+    return(abscisse)
+  }
+  def getOrdonnee() : Int = {
+    return(ordonnee)
+  }
+  def getOrientation() : Char = {
+    return(orientation)
+  }
+  def tourner(sens : Char) : Unit = {
+      sens match {
+          case 'G' => orientation match {
+              case 'N' => setOrientation('E')
+              case 'E' => setOrientation('S')
+              case 'W' => setOrientation('N')
+              case 'S' => setOrientation('W')
+          }
+          case 'D' => orientation match {
+              case 'N' => setOrientation('E')
+              case 'E' => setOrientation('S')
+              case 'W' => setOrientation('N')
+              case 'S' => setOrientation('W')
+          }
+      }
+      }
+  def avancer(jardin : Jardin) : Unit = {
+        orientation match {
+            case 'N' => setOrdonnee((getOrdonnee() + 1).min(jardin.getLargeur()))
+            case 'E' => setAbscisse((getAbscisse() + 1).min(jardin.getLongueur()))
+            case 'S' => setOrdonnee((getOrdonnee() - 1).max(0))
+            case 'W' => setAbscisse((getAbscisse() - 1).max(0))
+        }
+    }
+}
+
+
+object Tonte extends App{
+  def scanJardin() : List[Int] = {
+    println("Quelles sont les dimensions du terrain à tondre ?")
+    val dimensionsJardin = scala.io.StdIn.readLine()
+    val splitDimensionsJardin = dimensionsJardin.split(" ") 
+    val listDimensions = List(splitDimensionsJardin.head.toInt, splitDimensionsJardin.tail.head.toInt)
+    return(listDimensions)
+  }
+  val listDimensions = scanJardin()
+  val jardin = new Jardin(listDimensions(0), listDimensions(1))
+  /*jardin.setJardin(listDimensions(0),listDimensions(1))*/
+  def scanTondeuse() : Array[String] = {
+      println("Quelles sont les coordonnées et l'orientation de départ de la tondeuse")
+      val departTondeuse = scala.io.StdIn.readLine()
+      val splitDepartTondeuse = departTondeuse.split(" ")
+      return(splitDepartTondeuse)
+  }
+  def scanCommandes() : String = {
+      println("Quelles sont les commandes de la tondeuse en question ?")
+      val commandesTondeuse = scala.io.StdIn.readLine()
+      return(commandesTondeuse)
+  }
+  def executeCommandes(tondeuse : Tondeuse , commandes : String, jardin : Jardin) = {
+      for (i <- 0 to commandes.length - 1)
+          commandes(i) match {
+              case 'A' => tondeuse.avancer(jardin)
+              case 'G' => tondeuse.tourner('G')
+              case 'D' => tondeuse.tourner('D')
+          }
+      }
+  
+  def scanExecuteTondeusesCommandes(i : Int) : Unit = {
+      try {
+          var splitDepartTondeuse = scanTondeuse ()
+          try{
+              var tondeuse = new Tondeuse (splitDepartTondeuse.head.toInt, splitDepartTondeuse.tail.head.toInt, splitDepartTondeuse.tail.tail.head(0).toChar, jardin)
+              try{
+                  var commandes = scanCommandes()
+                  try{
+                      executeCommandes(tondeuse, commandes, jardin)
+                      println("Tondeuse " + i + " : " + tondeuse.getAbscisse() + " " + tondeuse.getOrdonnee +" " +  tondeuse.getOrientation  )
+                  }
+                  catch {case _ : Exception => println("Entres d'autres commandes (chaîne de caractères contenant A, G et D.")}
+              }
+              catch {case _ : Exception => println("Vous n'avez pas entré les commandes relatives à la tondeuse " + i +"." )}
+          }
+          catch {case _ : Exception => println("Nous n'avons pas réussi à créer la tondeuse, les coordonnées ou l'orientation n'est pas bonne")}
+      }
+      catch {case _ : Exception => if (i==1){"Vous n'avez pas entrée de coordonnées pour la tondeuse"} else {sys.exit(0)}}
+      finally {scanExecuteTondeusesCommandes(i+1)}
+  }
+  scanExecuteTondeusesCommandes(1)
+}
